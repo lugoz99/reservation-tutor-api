@@ -108,7 +108,7 @@
                 },
                 "responses": {
                     "200": {
-                        "description": "Login successful"
+                        "description": "User logged in successfully"
                     },
                     "422": {
                         "description": "Invalid credentials"
@@ -130,6 +130,142 @@
                     },
                     "401": {
                         "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/tutors": {
+            "get": {
+                "tags": [
+                    "Tutors"
+                ],
+                "summary": "Get tutors",
+                "operationId": "9bbbb366948632e3ea8de58ac09a149a",
+                "responses": {
+                    "200": {
+                        "description": "Tutors retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/tutors/{id}": {
+            "get": {
+                "tags": [
+                    "Tutors"
+                ],
+                "summary": "Get tutor by ID",
+                "operationId": "0503cd6af448456d5f8e33650b1b1f7a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Tutor ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 26
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tutor retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Tutor not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/tutors/{id}/calendar": {
+            "get": {
+                "tags": [
+                    "Tutors"
+                ],
+                "summary": "Get tutor calendar availability",
+                "operationId": "020af2e05f6473e1b4ef9be3e844c650",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Tutor ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 26
+                    },
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Date to check availability",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "example": "2026-08-18"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tutor calendar retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "404": {
+                        "description": "Tutor not found"
+                    },
+                    "422": {
+                        "description": "Invalid date"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/tutors/reservations": {
+            "get": {
+                "tags": [
+                    "Tutors"
+                ],
+                "summary": "Get authenticated tutor reservations",
+                "description": "Returns all reservations belonging to the authenticated tutor, including the student who made each reservation.",
+                "operationId": "db974600d3a8fbf01d0c923ce0d6ef3c",
+                "responses": {
+                    "200": {
+                        "description": "Tutor reservations retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a tutor"
                     }
                 },
                 "security": [
@@ -168,6 +304,10 @@
         {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "Tutors",
+            "description": "Tutors"
         },
         {
             "name": "System",
