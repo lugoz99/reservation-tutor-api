@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1097c4369ed306697c02c922dcc30940",
+    "content-hash": "72cd26084f0a9e3cde7a1c5a35658e06",
     "packages": [
         {
             "name": "apimatic/core",
@@ -2950,20 +2950,20 @@
         },
         {
             "name": "paypal/paypal-server-sdk",
-            "version": "2.3.0",
+            "version": "2.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/paypal/PayPal-PHP-Server-SDK.git",
-                "reference": "c54fefd059802b4fde7182d708b4d2dc99f9d2e5"
+                "reference": "88c6ebf5efc7efcd9518742d6b2f7644e460b4a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/paypal/PayPal-PHP-Server-SDK/zipball/c54fefd059802b4fde7182d708b4d2dc99f9d2e5",
-                "reference": "c54fefd059802b4fde7182d708b4d2dc99f9d2e5",
+                "url": "https://api.github.com/repos/paypal/PayPal-PHP-Server-SDK/zipball/88c6ebf5efc7efcd9518742d6b2f7644e460b4a3",
+                "reference": "88c6ebf5efc7efcd9518742d6b2f7644e460b4a3",
                 "shasum": ""
             },
             "require": {
-                "apimatic/core": "~0.3.17",
+                "apimatic/core": "~0.3.15",
                 "apimatic/core-interfaces": "~0.1.5",
                 "apimatic/unirest-php": "^4.0.6",
                 "ext-curl": "*",
@@ -2988,9 +2988,9 @@
             "homepage": "https://github.com/paypal/PayPal-PHP-Server-SDK",
             "support": {
                 "issues": "https://github.com/paypal/PayPal-PHP-Server-SDK/issues",
-                "source": "https://github.com/paypal/PayPal-PHP-Server-SDK/tree/2.3.0"
+                "source": "https://github.com/paypal/PayPal-PHP-Server-SDK/tree/2.0.0"
             },
-            "time": "2026-06-05T21:28:21+00:00"
+            "time": "2025-11-10T18:16:07+00:00"
         },
         {
             "name": "php-http/discovery",
