@@ -18,10 +18,11 @@ class PaymentService
 {
   private PaypalServerSdkClient $client;
 
-  private const TUTOR_ROLE_ID = 3;
+  private const TUTOR_ROLE_ID = 2;
 
-  public function __construct()
-  {
+  public function __construct(
+    private NotificationService $notificationService
+  ) {
     $this->client = PaypalServerSdkClientBuilder::init()
       ->clientCredentialsAuthCredentials(
         ClientCredentialsAuthCredentialsBuilder::init(
@@ -318,6 +319,9 @@ class PaymentService
    * duplicate webhook delivery from PayPal), so the caller
    * (webhook controller) can decide whether to send
    * notifications or not.
+   *
+   * This is also where the notifications (email + WhatsApp)
+   * are sent, right after the reservation is created.
    */
   public function handlePaymentCompleted(
     array $event
@@ -360,7 +364,7 @@ class PaymentService
       $hours
     );
 
-    DB::transaction(function () use ($paypalOrder, $event, $hours) {
+    $reservation = DB::transaction(function () use ($paypalOrder, $event, $hours) {
 
       $reservation = Reservation::create([
         'user_id' => $paypalOrder->user_id,
@@ -396,7 +400,20 @@ class PaymentService
       $paypalOrder->update([
         'status' => 'completed',
       ]);
+
+      return $reservation;
     });
+
+    /*
+     * We send notifications outside the DB transaction.
+     * If the email/WhatsApp API is slow or fails, we do not
+     * want to roll back the reservation that was already
+     * paid for. Both notification methods already catch
+     * their own errors internally, so a failure here does
+     * not break the webhook response.
+     */
+    $this->notificationService->sendReservationEmail($paypalOrder, $reservation);
+    $this->notificationService->sendReservationWhatsApp($paypalOrder, $reservation);
 
     return true;
   }

@@ -13,8 +13,9 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "paypal/paypal-server-sdk": "2.0.0",
+        "resend/resend-laravel": "^1.4",
         "spatie/laravel-permission": "^6.25",
-        "twilio/sdk": "^8.11"
+        "twilio/sdk": "^8.12"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
