@@ -2,28 +2,34 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Exceptions\ReservationCancellationException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\CancelReservationRequest;
+use App\Http\Requests\ChangePasswordRequest;
+use App\Http\Requests\UpdateStudentProfileRequest;
 use App\Services\PaymentService;
 use App\Services\ReservationService;
 use App\Services\StudentService;
-use App\Http\Requests\UpdateStudentProfileRequest;
-use App\Http\Requests\ChangePasswordRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use OpenApi\Attributes as OA;
 
 class StudentController extends Controller
 {
-
-
+    /**
+     * Role ID used by students in the system.
+     */
     private const STUDENT_ROLE_ID = 3;
+
     public function __construct(
         private readonly ReservationService $reservationService,
         private readonly StudentService $studentService,
         private readonly PaymentService $paymentService
-
     ) {}
 
+    /**
+     * Get the authenticated student's profile.
+     */
     #[OA\Get(
         path: '/api/my-profile',
         summary: 'Get my profile',
@@ -49,13 +55,24 @@ class StudentController extends Controller
     {
         $student = $request->user();
 
+        // Only students can access this resource.
+        if ((int) $student->role_id !== self::STUDENT_ROLE_ID) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only students can access this resource.',
+            ], 403);
+        }
+
         return response()->json([
+            'success' => true,
             'message' => 'Profile retrieved successfully',
             'data' => $this->studentService->getMyProfile($student),
         ]);
     }
 
-
+    /**
+     * Update the authenticated student's profile.
+     */
     #[OA\Put(
         path: '/api/my-profile',
         summary: 'Update my profile',
@@ -126,14 +143,17 @@ class StudentController extends Controller
         );
 
         return response()->json([
+            'success' => true,
             'message' => 'Profile updated successfully',
             'data' => $student,
         ]);
     }
 
-
-    #[OA\Post(
-        path: '/api/change-password',
+    /**
+     * Change the authenticated student's password.
+     */
+    #[OA\Put(
+        path: '/api/my-profile/change-password',
         summary: 'Change password',
         description: 'Changes the password of the authenticated student.',
         tags: ['Students'],
@@ -178,6 +198,10 @@ class StudentController extends Controller
                 description: 'Unauthenticated'
             ),
             new OA\Response(
+                response: 403,
+                description: 'Authenticated user is not a student'
+            ),
+            new OA\Response(
                 response: 422,
                 description: 'Validation error'
             )
@@ -194,12 +218,14 @@ class StudentController extends Controller
         );
 
         return response()->json([
+            'success' => true,
             'message' => 'Password changed successfully',
         ]);
     }
 
-
-
+    /**
+     * Get reservations belonging to the authenticated student.
+     */
     #[OA\Get(
         path: '/api/my-reservations',
         summary: 'Get my reservations',
@@ -216,7 +242,7 @@ class StudentController extends Controller
                     type: 'string',
                     format: 'date'
                 ),
-                example: '2026-08-18'
+                example: '2026-09-20'
             )
         ],
         responses: [
@@ -240,11 +266,23 @@ class StudentController extends Controller
     )]
     public function myReservations(Request $request): JsonResponse
     {
+        // Validate optional date filter.
         $request->validate([
-            'date' => ['nullable', 'date_format:Y-m-d'],
+            'date' => [
+                'nullable',
+                'date_format:Y-m-d',
+            ],
         ]);
 
         $student = $request->user();
+
+        // Only students can access their reservations.
+        if ((int) $student->role_id !== self::STUDENT_ROLE_ID) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only students can access their reservations.',
+            ], 403);
+        }
 
         $reservations = $this->reservationService->getMyReservations(
             $student,
@@ -252,12 +290,101 @@ class StudentController extends Controller
         );
 
         return response()->json([
+            'success' => true,
             'message' => 'Reservations retrieved successfully',
             'data' => $reservations,
         ]);
     }
 
+    /**
+     * Cancel one of the authenticated student's reservations.
+     */
+    #[OA\Delete(
+        path: '/api/reservations/{id}',
+        summary: 'Cancel an authenticated student reservation',
+        description: 'Cancels a confirmed reservation at least 24 hours before its start time. No refund is issued.',
+        tags: ['Students'],
+        security: [['sanctum' => []]],
+        parameters: [
+            new OA\Parameter(
+                name: 'id',
+                description: 'Reservation ID',
+                in: 'path',
+                required: true,
+                schema: new OA\Schema(
+                    type: 'integer',
+                    example: 15
+                )
+            )
+        ],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['cancellation_reason'],
+                properties: [
+                    new OA\Property(
+                        property: 'cancellation_reason',
+                        type: 'string',
+                        minLength: 10,
+                        maxLength: 500,
+                        example: 'Tuve un imprevisto personal y no podré asistir.'
+                    )
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(
+                response: 200,
+                description: 'Reservation cancelled successfully'
+            ),
+            new OA\Response(
+                response: 400,
+                description: 'Business rule prevents cancellation'
+            ),
+            new OA\Response(
+                response: 401,
+                description: 'Unauthenticated'
+            ),
+            new OA\Response(
+                response: 403,
+                description: 'Not authorized'
+            ),
+            new OA\Response(
+                response: 404,
+                description: 'Reservation not found'
+            ),
+            new OA\Response(
+                response: 422,
+                description: 'Validation error'
+            )
+        ]
+    )]
+    public function cancelReservation(
+        CancelReservationRequest $request,
+        int $id
+    ): JsonResponse {
+        try {
+            $this->reservationService->cancelReservation(
+                $request->user(),
+                $id,
+                $request->validated('cancellation_reason')
+            );
 
+            return response()->json([
+                'success' => true,
+                'message' => 'Reservation cancelled successfully',
+            ]);
+        } catch (ReservationCancellationException $exception) {
+            return response()->json([
+                'success' => false,
+                'message' => $exception->getMessage(),
+            ], $exception->statusCode);
+        }
+    }
+
+    /**
+     * Get the authenticated student's completed payments.
+     */
     #[OA\Get(
         path: '/api/my-payments',
         summary: 'Get my payments',
@@ -274,7 +401,7 @@ class StudentController extends Controller
                     type: 'string',
                     format: 'date'
                 ),
-                example: '2026-08-18'
+                example: '2026-09-20'
             )
         ],
         responses: [
@@ -298,24 +425,35 @@ class StudentController extends Controller
     )]
     public function myPayments(Request $request): JsonResponse
     {
+        // Validate optional date filter.
+        $request->validate([
+            'date' => [
+                'nullable',
+                'date_format:Y-m-d',
+            ],
+        ]);
+
+        $student = $request->user();
+
+        // Only students can access their payments.
+        if ((int) $student->role_id !== self::STUDENT_ROLE_ID) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Only students can access their payments.',
+            ], 403);
+        }
+
         try {
-            $user = $request->user();
-
-            // Only students can see their own payments
-            if ($user->role_id != self::STUDENT_ROLE_ID) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Not authorized. Only students can access this.',
-                ], 403);
-            }
-
-            $payments = $this->paymentService->getMyPayments($user);
+            $payments = $this->paymentService->getMyPayments(
+                $student,
+                $request->query('date')
+            );
 
             return response()->json([
                 'success' => true,
                 'message' => 'Payments retrieved successfully',
                 'data' => $payments,
-            ], 200);
+            ]);
         } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,

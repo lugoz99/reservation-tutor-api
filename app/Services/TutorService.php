@@ -13,6 +13,26 @@ class TutorService
 {
   private const TUTOR_ROLE_ID = 2;
 
+  public function getMyProfile(User $tutor): User
+  {
+    if ($tutor->role_id !== self::TUTOR_ROLE_ID) {
+      throw new RuntimeException('The authenticated user is not a tutor.');
+    }
+
+    return $tutor->load('role');
+  }
+
+  public function updateMyProfile(User $tutor, array $data): User
+  {
+    if ($tutor->role_id !== self::TUTOR_ROLE_ID) {
+      throw new RuntimeException('The authenticated user is not a tutor.');
+    }
+
+    $tutor->update($data);
+
+    return $tutor->fresh('role');
+  }
+
   public function getAll(): LengthAwarePaginator
   {
     return User::query()
@@ -24,6 +44,7 @@ class TutorService
         'email',
         'phone',
         'photo',
+        'hourly_rate',
         'role_id',
         'created_at',
       ])
@@ -57,6 +78,7 @@ class TutorService
       'email' => $tutor->email,
       'phone' => $tutor->phone,
       'photo' => $tutor->photo,
+      'hourly_rate' => $tutor->hourly_rate,
       'role_id' => $tutor->role_id,
       'created_at' => $tutor->created_at,
       'updated_at' => $tutor->updated_at,
@@ -76,6 +98,7 @@ class TutorService
       'email' => $data['email'],
       'phone' => $data['phone'] ?? null,
       'photo' => $data['photo'] ?? null,
+      'hourly_rate' => $data['hourly_rate'] ?? null,
       'password' => Hash::make($data['password']),
       'role_id' => self::TUTOR_ROLE_ID,
     ]);
@@ -93,6 +116,7 @@ class TutorService
       'email' => $data['email'] ?? $tutor->email,
       'phone' => $data['phone'] ?? $tutor->phone,
       'photo' => $data['photo'] ?? $tutor->photo,
+      'hourly_rate' => $data['hourly_rate'] ?? $tutor->hourly_rate,
     ]);
 
     return $tutor->refresh();
@@ -131,7 +155,4 @@ class TutorService
 
     return $query->paginate(10);
   }
-
-
-  
 }

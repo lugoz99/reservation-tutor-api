@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateTutorProfileRequest;
+use App\Http\Requests\UpdateTutorAvailabilityRequest;
 use App\Services\TutorCalendarService;
 use App\Services\TutorService;
 use Illuminate\Http\JsonResponse;
@@ -76,6 +78,62 @@ class TutorController extends Controller
         return response()->json([
             'message' => 'Tutor retrieved successfully',
             'data' => $this->tutorService->getById($id),
+        ]);
+    }
+
+    #[OA\Get(
+        path: '/api/tutor/profile',
+        summary: 'Get authenticated tutor profile',
+        tags: ['Tutors'],
+        security: [['sanctum' => []]],
+        responses: [
+            new OA\Response(response: 200, description: 'Tutor profile retrieved successfully'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Authenticated user is not a tutor'),
+        ]
+    )]
+    public function myProfile(Request $request): JsonResponse
+    {
+        return response()->json([
+            'message' => 'Tutor profile retrieved successfully',
+            'data' => $this->tutorService->getMyProfile($request->user()),
+        ]);
+    }
+
+    #[OA\Put(
+        path: '/api/tutor/profile',
+        summary: 'Update authenticated tutor profile',
+        tags: ['Tutors'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                properties: [
+                    new OA\Property(property: 'first_names', type: 'string', example: 'Carlos'),
+                    new OA\Property(property: 'last_names', type: 'string', example: 'Perez'),
+                    new OA\Property(property: 'email', type: 'string', format: 'email', example: 'carlos.perez@test.com'),
+                    new OA\Property(property: 'phone', type: 'string', nullable: true, example: '3001234567'),
+                    new OA\Property(property: 'photo', type: 'string', nullable: true, example: 'photos/tutors/carlos.jpg'),
+                    new OA\Property(property: 'hourly_rate', type: 'integer', minimum: 30000, maximum: 100000, example: 40000),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Tutor profile updated successfully'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Authenticated user is not a tutor'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ]
+    )]
+    public function updateMyProfile(
+        UpdateTutorProfileRequest $request
+    ): JsonResponse {
+        return response()->json([
+            'message' => 'Tutor profile updated successfully',
+            'data' => $this->tutorService->updateMyProfile(
+                $request->user(),
+                $request->validated()
+            ),
         ]);
     }
 
@@ -228,6 +286,52 @@ class TutorController extends Controller
             'data' => $this->tutorCalendarService->getAuthenticatedTutorCalendar(
                 $tutor,
                 $request->query('date')
+            ),
+        ]);
+    }
+
+    #[OA\Put(
+        path: '/api/tutors/calendar',
+        summary: 'Set authenticated tutor availability',
+        description: 'Replaces the authenticated tutor availability for a date. Hours must be whole-hour slots between 08:00 and 17:00.',
+        tags: ['Tutors'],
+        security: [['sanctum' => []]],
+        requestBody: new OA\RequestBody(
+            required: true,
+            content: new OA\JsonContent(
+                required: ['name', 'date', 'hours'],
+                properties: [
+                    new OA\Property(property: 'name', type: 'string', maxLength: 150, example: 'Horario de clases de septiembre'),
+                    new OA\Property(property: 'date', type: 'string', format: 'date', example: '2026-09-20'),
+                    new OA\Property(
+                        property: 'hours',
+                        type: 'array',
+                        minItems: 1,
+                        maxItems: 10,
+                        items: new OA\Items(type: 'string', pattern: '^([0-1][0-9]):00$', example: '08:00')
+                    ),
+                ]
+            )
+        ),
+        responses: [
+            new OA\Response(response: 200, description: 'Tutor availability updated successfully'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Authenticated user is not a tutor'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ]
+    )]
+    public function updateAvailability(
+        UpdateTutorAvailabilityRequest $request
+    ): JsonResponse {
+        $tutor = $request->user();
+
+        return response()->json([
+            'message' => 'Tutor availability updated successfully',
+            'data' => $this->tutorCalendarService->updateAvailability(
+                $tutor,
+                $request->validated('date'),
+                $request->validated('name'),
+                $request->validated('hours')
             ),
         ]);
     }

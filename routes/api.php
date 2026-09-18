@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\AdminUserController;
 use App\Http\Controllers\Api\PaypalController;
 use App\Http\Controllers\Api\PaypalWebhookController;
 use App\Http\Controllers\Api\StudentController;
@@ -25,10 +26,26 @@ Route::middleware('auth:sanctum')->group(function () {
         [AuthController::class, 'logout']
     );
 
+    Route::post(
+        '/admin/users',
+        [AdminUserController::class, 'store']
+    );
+
     Route::get(
         '/tutors',
         [TutorController::class, 'index']
     );
+
+    Route::get(
+        '/tutor/profile',
+        [TutorController::class, 'myProfile']
+    );
+
+    Route::put(
+        '/tutor/profile',
+        [TutorController::class, 'updateMyProfile']
+    );
+
     // Must be before /tutors/{id}
     Route::get(
         '/tutors/reservations',
@@ -38,6 +55,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get(
         '/tutors/calendar',
         [TutorController::class, 'myCalendar']
+    );
+
+    Route::put(
+        '/tutors/calendar',
+        [TutorController::class, 'updateAvailability']
     );
 
     Route::get(
@@ -57,6 +79,11 @@ Route::middleware('auth:sanctum')->group(function () {
         '/my-reservations',
         [StudentController::class, 'myReservations']
     );
+
+    Route::delete(
+        '/reservations/{id}',
+        [StudentController::class, 'cancelReservation']
+    )->whereNumber('id');
 
     Route::get(
         '/my-profile',

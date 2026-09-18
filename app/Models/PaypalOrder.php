@@ -17,6 +17,8 @@ class PaypalOrder extends Model
         'reservation_date',
         'hours',
         'total_amount',
+        'paypal_amount',
+        'paypal_currency',
         'paypal_order_id',
         'status',
     ];
@@ -27,6 +29,7 @@ class PaypalOrder extends Model
             'reservation_date' => 'date',
             'hours' => 'array',
             'total_amount' => 'decimal:2',
+            'paypal_amount' => 'decimal:2',
         ];
     }
 

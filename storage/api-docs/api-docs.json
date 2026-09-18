@@ -12,6 +12,104 @@
         }
     ],
     "paths": {
+        "/api/admin/users": {
+            "post": {
+                "tags": [
+                    "Admin"
+                ],
+                "summary": "Create a user",
+                "description": "Creates an admin, tutor, or student. Only users with role_id 1 can use this endpoint.",
+                "operationId": "e8099f9cb4d98a9dcb191e75b1453c9d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "first_names",
+                                    "last_names",
+                                    "email",
+                                    "password",
+                                    "password_confirmation",
+                                    "role_id"
+                                ],
+                                "properties": {
+                                    "first_names": {
+                                        "type": "string",
+                                        "example": "Carlos"
+                                    },
+                                    "last_names": {
+                                        "type": "string",
+                                        "example": "Perez"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "carlos.perez@test.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Admin12345"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "Admin12345"
+                                    },
+                                    "role_id": {
+                                        "type": "integer",
+                                        "example": 2,
+                                        "enum": [
+                                            1,
+                                            2,
+                                            3
+                                        ]
+                                    },
+                                    "hourly_rate": {
+                                        "type": "integer",
+                                        "example": 40000,
+                                        "nullable": true,
+                                        "maximum": 100000,
+                                        "minimum": 30000
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "3001234567",
+                                        "nullable": true
+                                    },
+                                    "photo": {
+                                        "type": "string",
+                                        "example": "photos/users/carlos.jpg",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User created successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not an admin"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/register": {
             "post": {
                 "tags": [
@@ -139,6 +237,370 @@
                 ]
             }
         },
+        "/api/paypal/create-order": {
+            "post": {
+                "tags": [
+                    "PayPal"
+                ],
+                "summary": "Create PayPal order",
+                "description": "Validates the tutoring reservation data and creates a PayPal order without creating the reservation.",
+                "operationId": "9c7799785dbb092dae0eded28ba0419b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "tutor_id",
+                                    "date",
+                                    "hours"
+                                ],
+                                "properties": {
+                                    "tutor_id": {
+                                        "type": "integer",
+                                        "example": 26
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-08-18"
+                                    },
+                                    "hours": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "10:00"
+                                        },
+                                        "example": [
+                                            "10:00",
+                                            "11:00",
+                                            "12:00"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "PayPal order created successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/my-profile": {
+            "get": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Get my profile",
+                "description": "Returns the profile information of the authenticated student.",
+                "operationId": "f63a4093ba3e452b443ee7b0bb826403",
+                "responses": {
+                    "200": {
+                        "description": "Profile retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a student"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Update my profile",
+                "description": "Updates the profile information of the authenticated student.",
+                "operationId": "2406167f745cd0548ab0975943c4da94",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "first_names": {
+                                        "type": "string",
+                                        "example": "John"
+                                    },
+                                    "last_names": {
+                                        "type": "string",
+                                        "example": "Smith"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "john.smith@example.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "3001234567"
+                                    },
+                                    "photo": {
+                                        "type": "string",
+                                        "example": "photos/students/john.jpg",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile updated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a student"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/my-profile/change-password": {
+            "put": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Change password",
+                "description": "Changes the password of the authenticated student.",
+                "operationId": "85181866f3291d51f8b88561c07d3cf2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "OldPassword123"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "NewPassword123"
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "NewPassword123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a student"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/my-reservations": {
+            "get": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Get my reservations",
+                "description": "Returns the reservations of the authenticated student.",
+                "operationId": "bedc6f45e89a04184456a0e1c81cb6e9",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Filter reservations by date",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "example": "2026-09-20"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Reservations retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a student"
+                    },
+                    "422": {
+                        "description": "Invalid date"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/reservations/{id}": {
+            "delete": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Cancel an authenticated student reservation",
+                "description": "Cancels a confirmed reservation at least 24 hours before its start time. No refund is issued.",
+                "operationId": "556c78c34213ad52e7b4ab136aed8aa1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Reservation ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 15
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "cancellation_reason"
+                                ],
+                                "properties": {
+                                    "cancellation_reason": {
+                                        "type": "string",
+                                        "example": "Tuve un imprevisto personal y no podré asistir.",
+                                        "maxLength": 500,
+                                        "minLength": 10
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Reservation cancelled successfully"
+                    },
+                    "400": {
+                        "description": "Business rule prevents cancellation"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Not authorized"
+                    },
+                    "404": {
+                        "description": "Reservation not found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/my-payments": {
+            "get": {
+                "tags": [
+                    "Students"
+                ],
+                "summary": "Get my payments",
+                "description": "Returns the payment history of the authenticated student.",
+                "operationId": "dc7c364d3cafe03b6dfdf7847dc0f494",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Filter payments by reservation date",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "example": "2026-09-20"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Payments retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a student"
+                    },
+                    "422": {
+                        "description": "Invalid date"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/tutors": {
             "get": {
                 "tags": [
@@ -167,6 +629,7 @@
                     "Tutors"
                 ],
                 "summary": "Get tutor by ID",
+                "description": "Returns the tutor information and reservation statistics.",
                 "operationId": "0503cd6af448456d5f8e33650b1b1f7a",
                 "parameters": [
                     {
@@ -189,6 +652,98 @@
                     },
                     "404": {
                         "description": "Tutor not found"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/tutor/profile": {
+            "get": {
+                "tags": [
+                    "Tutors"
+                ],
+                "summary": "Get authenticated tutor profile",
+                "operationId": "a5e2980c07d917c998f3093ee5a4d8a5",
+                "responses": {
+                    "200": {
+                        "description": "Tutor profile retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a tutor"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Tutors"
+                ],
+                "summary": "Update authenticated tutor profile",
+                "operationId": "e78801302691c9816e665290f2fc20f5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "first_names": {
+                                        "type": "string",
+                                        "example": "Carlos"
+                                    },
+                                    "last_names": {
+                                        "type": "string",
+                                        "example": "Perez"
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "carlos.perez@test.com"
+                                    },
+                                    "phone": {
+                                        "type": "string",
+                                        "example": "3001234567",
+                                        "nullable": true
+                                    },
+                                    "photo": {
+                                        "type": "string",
+                                        "example": "photos/tutors/carlos.jpg",
+                                        "nullable": true
+                                    },
+                                    "hourly_rate": {
+                                        "type": "integer",
+                                        "example": 40000,
+                                        "maximum": 100000,
+                                        "minimum": 30000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tutor profile updated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a tutor"
+                    },
+                    "422": {
+                        "description": "Validation error"
                     }
                 },
                 "security": [
@@ -275,6 +830,112 @@
                 ]
             }
         },
+        "/api/tutors/calendar": {
+            "get": {
+                "tags": [
+                    "Tutors"
+                ],
+                "summary": "Get authenticated tutor calendar",
+                "description": "Returns the availability calendar of the authenticated tutor.",
+                "operationId": "a2285e7020ef68eed19b1d7a3dda9e80",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Date to check availability",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "example": "2026-08-18"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tutor calendar retrieved successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a tutor"
+                    },
+                    "422": {
+                        "description": "Invalid date"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Tutors"
+                ],
+                "summary": "Set authenticated tutor availability",
+                "description": "Replaces the authenticated tutor availability for a date. Hours must be whole-hour slots between 08:00 and 17:00.",
+                "operationId": "8347f5ddf17cc9361c8abff80f57ec4c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name",
+                                    "date",
+                                    "hours"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Horario de clases de septiembre",
+                                        "maxLength": 150
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-09-20"
+                                    },
+                                    "hours": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "pattern": "^([0-1][0-9]):00$",
+                                            "example": "08:00"
+                                        },
+                                        "maxItems": 10,
+                                        "minItems": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tutor availability updated successfully"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Authenticated user is not a tutor"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/health": {
             "get": {
                 "tags": [
@@ -302,8 +963,20 @@
     },
     "tags": [
         {
+            "name": "Admin",
+            "description": "Admin"
+        },
+        {
             "name": "Authentication",
             "description": "Authentication"
+        },
+        {
+            "name": "PayPal",
+            "description": "PayPal"
+        },
+        {
+            "name": "Students",
+            "description": "Students"
         },
         {
             "name": "Tutors",

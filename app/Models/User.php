@@ -27,6 +27,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role_id',
+        'hourly_rate',
         'photo',
     ];
 
@@ -50,6 +51,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'hourly_rate' => 'integer',
         ];
     }
 
