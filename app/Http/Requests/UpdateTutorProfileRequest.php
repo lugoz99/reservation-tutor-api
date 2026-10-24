@@ -15,18 +15,50 @@ class UpdateTutorProfileRequest extends FormRequest
   public function rules(): array
   {
     return [
-      'first_names' => ['sometimes', 'required', 'string', 'max:100'],
-      'last_names' => ['sometimes', 'required', 'string', 'max:100'],
+      'first_names' => [
+        'sometimes',
+        'required',
+        'string',
+        'max:100',
+      ],
+
+      'last_names' => [
+        'sometimes',
+        'required',
+        'string',
+        'max:100',
+      ],
+
       'email' => [
         'sometimes',
         'required',
         'email',
         'max:255',
-        Rule::unique('users', 'email')->ignore($this->user()->id),
+        Rule::unique('users', 'email')
+          ->ignore($this->user()->id),
       ],
-      'phone' => ['sometimes', 'nullable', 'string', 'max:30'],
-      'photo' => ['sometimes', 'nullable', 'string', 'max:255'],
-      'hourly_rate' => ['sometimes', 'required', 'integer', 'min:30000', 'max:100000'],
+
+      'phone' => [
+        'sometimes',
+        'nullable',
+        'string',
+        'max:30',
+      ],
+
+      'photo' => [
+        'sometimes',
+        'nullable',
+        'string',
+        'max:255',
+      ],
+
+      'hourly_rate' => [
+        'sometimes',
+        'required',
+        'numeric',
+        'min:1',
+        'max:1000',
+      ],
     ];
   }
 }
